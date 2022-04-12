@@ -47,7 +47,7 @@ struct DetailTaskView: View {
                 .background(Color(.white))
                 .cornerRadius(15)
                
-                ForEach($viewModel.options){
+                ForEach($viewModel.options, id: \._id){
                     $option in
                     OptionView(option: $option, options: $viewModel.options)
                 }
@@ -64,7 +64,7 @@ struct DetailTaskView: View {
                 .background(Color(.white))
                 .cornerRadius(15)
                 .onTapGesture {
-                    let option = Option()
+                    let option = Option(text:"")
                     viewModel.options.append(option)
                 }
                 .alert(isPresented: $viewModel.showAlert) {

@@ -9,13 +9,23 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct ContentView: View {
-    @EnvironmentObject var viewModel: TaskViewModel
+    @StateObject var viewModel = TaskViewModel()
+    @EnvironmentObject var authentication: AuthenticationViewModel
     var screenWidth = UIScreen.main.bounds.width
+    
     var body: some View {
 
         NavigationView{
             VStack {
                 HStack {
+                    NavigationLink{
+                        HomeView()
+                    }label: {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .frame(width: 30, height: 30, alignment: .leading)
+                            .foregroundColor(.gray)
+                    }
                     Spacer()
                     NavigationLink{
                         TaskView()
@@ -45,6 +55,9 @@ struct ContentView: View {
                     Text("Dat lai banh xe")
                 }
                 Spacer()
+            }
+            .alert("Important message", isPresented: $authentication.showAlert) {
+                Button("OK", role: .cancel) { authentication.signOut()}
             }
             .navigationBarHidden(true)
         }

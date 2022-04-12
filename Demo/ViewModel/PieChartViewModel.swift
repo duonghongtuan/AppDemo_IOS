@@ -8,21 +8,23 @@
 import Foundation
 import SwiftUI
 import RealmSwift
+let ArrayColor = [Color.green, Color.red, Color.orange, Color.yellow,  Color.blue, Color.pink, Color.purple, Color(hue: 0.649, saturation: 0.442, brightness: 0.79)]
 
-class PieChartViewModel: ObservableObject{
-    @Published var id: ObjectId?
-    @Published var colors: [Color]
-    @Published var question: String = ""
-    @Published var slices: [PieSliceData] = []
-    init(){
-        let arrayColor = [Color.green, Color.red, Color.orange, Color.yellow,  Color.blue, Color.pink, Color.purple, Color(hue: 0.649, saturation: 0.442, brightness: 0.79)]
-        self.colors = arrayColor
+struct PieChart{
+    var id: ObjectId?
+    var colors = ArrayColor
+    var question: String = ""
+    var slices: [PieSliceData] = []
+    init(question: Question){
+        createSlices(question: question)
     }
-    
-    
-    
-    
-    func createSlices(options: [Option], question: String){
+        
+    mutating func createSlices(question: Question){
+        
+        var options: [Option] = []
+        for option in question.options{
+            options.append(option)
+        }
         var endDeg: Double = 0
         var tempSlices: [PieSliceData] = []
         var sum = 0.0
@@ -31,11 +33,11 @@ class PieChartViewModel: ObservableObject{
         }
         for (i, value) in options.enumerated() {
             let degrees: Double = Double(value.weight) * 360.0 / sum
-            tempSlices.append(PieSliceData(startAngle: Angle(degrees: endDeg), endAngle: Angle(degrees:endDeg + degrees), text: value.option, color: self.colors[i]))
+            tempSlices.append(PieSliceData(startAngle: Angle(degrees: endDeg), endAngle: Angle(degrees:endDeg + degrees), text: value.text, color: self.colors[i]))
             endDeg += degrees
         }
         self.slices = tempSlices
-        self.question = question
+        self.question = question.question
     }
 }
 struct PieSliceData {

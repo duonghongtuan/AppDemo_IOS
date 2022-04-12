@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-let start = Option()
+let start = OptionRealm()
 @available(iOS 15.0, *)
 struct AddTaskView: View {
     @EnvironmentObject var viewModel: TaskViewModel
@@ -25,9 +25,7 @@ struct AddTaskView: View {
                 }
                 Spacer()
                 Button{
-                    if(viewModel.addTask()){
-                        dismiss()
-                    }
+                   viewModel.addTask()
                 }label: {
                     Text("Add")
                         .font(.title3)
@@ -47,7 +45,7 @@ struct AddTaskView: View {
                 .background(Color(.white))
                 .cornerRadius(15)
                
-                ForEach($viewModel.options){
+                ForEach($viewModel.options, id: \._id){
                     $option in
                     OptionView(option: $option, options: $viewModel.options)
                 }
@@ -64,7 +62,7 @@ struct AddTaskView: View {
                 .background(Color(.white))
                 .cornerRadius(15)
                 .onTapGesture {
-                    let option = Option()
+                    let option = Option(text: "")
                     viewModel.options.append(option)
                 }
                 .alert(isPresented: $viewModel.showAlert) {

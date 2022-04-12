@@ -7,26 +7,45 @@
 
 import Foundation
 import RealmSwift
+import Alamofire
+import Combine
 
+let x = Option(_id: "1", text: "1", weight: 1)
+let y = Option(_id: "2", text: "2", weight: 1)
+
+let obj = Question(question: "Abc", createDate: 1647316585000, lastUpdate: 1647316585000, userId: "", index: 1, options: [x,y])
 class TaskViewModel: ObservableObject{
-    @Published var realmManager =  RealmManager()
-    @Published var pieChart = PieChartViewModel()
+    var realmManager : RealmService
+    var apiService : ApiService
+    @Published var questions = [Question]()
+    @Published var pieChart : PieChart
     @Published var question: String = ""
     @Published var options : [Option] = []
     @Published var showAlert = false
     @Published var showAddTaskView = false
     @Published var showAddDetailTaskView = false
-    @Published var id : ObjectId?
+    @Published var id : String = ""
     @Published private(set) var degrees = 0.0
     @Published var option: String = ""
     @Published private(set) var timeRandom = 5
     
-    init(){
-        self.pieChart.createSlices(options: convertOptions(task: realmManager.tasks[0]), question: realmManager.tasks[0].question)
-        self.pieChart.id = realmManager.tasks[0].id
+    init( realmService: RealmService = RealmService(), apiService: ApiService = ApiService()){
+        self.realmManager = realmService
+        self.apiService = apiService
+        self.pieChart = PieChart(question: obj)
+        getQuestions()
+    }
+    
+    func getQuestions(){
+        print("getqs")
+        apiService.apiQuestion.getAllQuestions(userId: realmManager.user!.userId){
+            data in
+            self.questions = data
+        }
     }
     
     func ranDomOption(){
+        getQuestions()
         self.degrees += 2050
         let check = pieChart.slices[0].endAngle.degrees
         let slice = pieChart.slices.randomElement()
@@ -56,47 +75,54 @@ class TaskViewModel: ObservableObject{
         }
         loop()
       
-//        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(4000)) {
-//            self.option = slice!.text
-//        }
     }
     
-    func createTask(question: String, options: [Option], id: ObjectId){
+    func createTask(question: String, options: [Option], id: String){
         self.question = question
         self.options = options
         self.id = id
     }
     
-    func addTask()-> Bool{
+    func addTask(){
         var check = true
         for i in options{
-            if i.option == "" {
+            if i.text == "" {
                 check = false
                 break
             }
         }
         if (question != "") && check {
-            realmManager.addTask(question: question, options: options)
-            return true
-        }else{
+            let index = questions.count + 1
+            
+            let now = Date().millisecondsSince1970
+            
+            let newQuestion = Question(question: question, createDate: now,lastUpdate: now,userId: realmManager.user!.userId,index: index ,options: options)
+            
+            realmManager.addQuestion( question: newQuestion)
+            
+            showAddTaskView = false
+            
+            questions.append(newQuestion)
+            
+//            apiService.apiQuestion.addQuestion(question: newQuestion)
+            }else{
             showAlert = true
         }
-        return false
     }
     
     func updateTask() -> Bool{
         var check = true
         for i in options{
-            if i.option == ""{
+            if i.text == ""{
                 check = false
                 break
             }
         }
         if (question != "") && check {
-            realmManager.updateTask(id: id!, question: question, options: options)
-            if(id == pieChart.id){
-                pieChart.createSlices(options: options, question: question)
-            }
+            realmManager.updateQuestion(id: id, question: question, options: options)
+//            if(id == pieChart.id){
+//                pieChart.createSlices(options: options, question: question)
+//            }
             reset()
             return true
         }else{
@@ -105,45 +131,43 @@ class TaskViewModel: ObservableObject{
         return false
     }
     
-    func deleteTask(id : ObjectId){
-        realmManager.deleteTask(id: id)
+    func deleteQuestion(id : String, index: Int){
+        questions.remove(at: index)
+        realmManager.deleteQuestion(id: id)
         getData()
     }
     
     func getData(){
-        self.realmManager = RealmManager()
-        self.pieChart = PieChartViewModel()
+//        self.realmManager = RealmService()
+//        self.pieChart = PieChartViewModel()
     }
     
     func reset(){
         question = ""
         options = []
-        id = nil
+        id = ""
         degrees = 0.0
         option = ""
     }
     
-    func convertOptions(task: Task) -> [Option]{
-        var options: [Option] = []
+    func convertOptions(task: QuestionRealm) -> [OptionRealm]{
+        var options: [OptionRealm] = []
         for option in task.options{
             options.append(option)
         }
         return options
     }
 
-    func createPieChart(task: Task){
-        let x = PieChartViewModel()
-        x.createSlices(options: convertOptions(task: task), question: task.question)
-        x.id = task.id
-        self.pieChart = x
+    func createPieChart(task: QuestionRealm){
+//        let x = PieChartViewModel()
+//        x.createSlices(options: convertOptions(task: task), question: task.question)
+//        x.id = task.id
+//        self.pieChart = x
     }
     
     func displayAddTaskView(){
-        question = ""
-        options = [Option(), Option()]
-        id = nil
-        degrees = 0.0
-        option = ""
+        reset()
+        options = [Option(text:""), Option(text:"")]
         showAddTaskView = true
     }
 }

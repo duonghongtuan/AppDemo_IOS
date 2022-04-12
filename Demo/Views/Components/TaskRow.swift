@@ -24,8 +24,8 @@ struct TaskRow: View {
                 .frame(width: 30, height: 30)
                 .foregroundColor(.blue)
                 .onTapGesture {
-                    let task = viewModel.realmManager.tasks[index]
-                    viewModel.createTask(question: question, options: viewModel.convertOptions(task: task), id: task.id)
+                    let task = viewModel.questions[index]
+                    viewModel.createTask(question: question, options: task.options, id: task._id!)
                     viewModel.showAddDetailTaskView.toggle()
                 }
 
@@ -36,9 +36,9 @@ struct TaskRow: View {
                 .environmentObject(viewModel)
         }
         .onTapGesture {
-            let task = viewModel.realmManager.tasks[index]
-            viewModel.reset()
-            viewModel.createPieChart(task: task)
+//            let task = viewModel.questions[index]
+//            viewModel.reset()
+//            viewModel.createPieChart(task: task)
             self.presentationMode.wrappedValue.dismiss()
         }
         .frame(maxWidth: .infinity, alignment:

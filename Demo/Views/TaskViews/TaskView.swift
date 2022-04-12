@@ -10,23 +10,22 @@ import SwiftUI
 @available(iOS 15.0, *)
 struct TaskView: View {
     @EnvironmentObject var viewModel: TaskViewModel
+    
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             List{
-                ForEach(viewModel.realmManager.tasks){
+                ForEach(viewModel.questions, id: \._id){
                     task in
-                    if !task.isInvalidated {
-                        let i = viewModel.realmManager.tasks.firstIndex(where: {$0.id == task.id})
+                        let i = viewModel.questions.firstIndex(where: {$0._id == task._id})
                         TaskRow(question: task.question, index: i!)
                             .environmentObject(viewModel)
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) {
-                                    viewModel.deleteTask(id: task.id)
+                                    viewModel.deleteQuestion(id: task._id!, index: i!)
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
                             }
-                    }
             }
             
         }

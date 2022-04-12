@@ -6,17 +6,17 @@
 //
 
 import Foundation
-
-//struct Option: Identifiable{
-//    var id = UUID()
-//    var option: String
-//    var weight: Int
-//}
-
 import RealmSwift
 
-class Option: Object, ObjectKeyIdentifiable {
-    @Persisted(primaryKey: true) var id: ObjectId
-    @Persisted var option: String
+class OptionRealm: Object, ObjectKeyIdentifiable {
+    @Persisted var _id: String
+    @Persisted var text: String
     @Persisted var weight: Int = 1
+}
+
+
+struct Option:Hashable, Codable{
+    var _id: String?
+    var text: String
+    var weight: Int = 1
 }

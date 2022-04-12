@@ -17,11 +17,11 @@ struct OptionView: View {
                 .frame(width: 20, height: 20, alignment: .leading)
                 .foregroundColor(.red)
                 .onTapGesture {
-                    let i = options.firstIndex( where: {$0.id == option.id})
+                    let i = options.firstIndex( where: {$0._id == option._id})
                     options.remove(at: i!)
                     
                 }
-            TextField("Lua chon", text: $option.option)
+            TextField("Lua chon", text: $option.text)
             Spacer()
         }
         .padding(.vertical)
@@ -32,7 +32,7 @@ struct OptionView: View {
 
 struct OptionView_Previews: PreviewProvider {
     static var previews: some View {
-        let option = Option()
+        let option = Option(text: "")
         OptionView(option: .constant(option), options: .constant([option]))
     }
 }

@@ -1,21 +1,20 @@
+//
+//  ApiLogin.swift
+//  Demo
+//
+//  Created by Nhung Nguyen on 12/04/2022.
+//
+
+import Foundation
+import Alamofire
 import Firebase
 import GoogleSignIn
 
-class AuthenticationViewModel: ObservableObject {
-    @Published var realmSevice: RealmService
+class ApiLogin: ObservableObject {
     @Published var showAlert = false
     let rest = RestManager()
 
-  enum SignInState {
-    case signedIn
-    case signedOut
-  }
-  @Published var state: SignInState = .signedOut
-    
-    init(realmService: RealmService = RealmService()){
-        
-        self.realmSevice = realmService
-        
+    init(){
         if GIDSignIn.sharedInstance.hasPreviousSignIn() {
           GIDSignIn.sharedInstance.restorePreviousSignIn { [unowned self] user, error in
               authenticateUser(for: user, with: error)
@@ -24,7 +23,6 @@ class AuthenticationViewModel: ObservableObject {
     }
     
     func signIn() {
-        
       // 1
       if GIDSignIn.sharedInstance.hasPreviousSignIn() {
         GIDSignIn.sharedInstance.restorePreviousSignIn { [unowned self] user, error in
@@ -68,8 +66,6 @@ class AuthenticationViewModel: ObservableObject {
           print(error.localizedDescription)
         } else {
             guard let userID = Auth.auth().currentUser?.uid else { return }
-            state = .signedIn
-            realmSevice.addUser(user: User(value: ["userId": userID, "name": (user?.profile!.name)!, "email": (user?.profile!.email)!]))
             login(userID: userID, name: (user?.profile!.name)!, email: (user?.profile!.email)!)
         }
       }
@@ -82,8 +78,6 @@ class AuthenticationViewModel: ObservableObject {
       do {
         // 2
         try Auth.auth().signOut()
-        realmSevice.deleteUser()
-        state = .signedOut
       } catch {
         print(error.localizedDescription)
       }
@@ -92,17 +86,15 @@ class AuthenticationViewModel: ObservableObject {
     func login(userID: String, name: String, email: String){
         
         guard let url = URL(string: "https://demo-gamma-six.vercel.app/api/auth/info") else { return }
-                rest.requestHttpHeaders.add(value: "application/json", forKey: "Content-Type")
-                rest.httpBodyParameters.add(value: email, forKey: "email")
-                rest.httpBodyParameters.add(value: userID, forKey: "userId")
-                rest.httpBodyParameters.add(value: name, forKey: "name")
-
-                rest.makeRequest(toURL: url, withHttpMethod: .post) { (results) in
-                    guard let response = results.response else { return }
-                    if response.httpStatusCode != 200 {
-                        self.showAlert = true
-                    }
-                        
+                
+                let parameters: [String: String] = [
+                    "UserId": userID,
+                    "name": name,
+                    "email": email
+                ]
+                AF.request(url ,method: .post, parameters: parameters, encoder: JSONParameterEncoder.default)
+                .response{ response in
+                    debugPrint(response)
             }
     }
 
